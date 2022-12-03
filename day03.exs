@@ -15,8 +15,11 @@ p = fn x ->
         n = div(Enum.count(l), 2)
         a = Enum.take(l, n) |> MapSet.new()
         b = Enum.drop(l, n) |> MapSet.new()
-        MapSet.intersection(a, b) |> Enum.to_list |> List.first |> :binary.first |> then(p)
-        #p.(Enum.at(c, 0))
+        MapSet.intersection(a, b)
+        |> Enum.to_list
+        |> List.first
+        |> :binary.first
+        |> then(p)
     end
 )
 |> Enum.sum
