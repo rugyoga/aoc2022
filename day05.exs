@@ -1,9 +1,5 @@
 defmodule Stack do
     def transfer([amount, from, to], stacks) do
-        IO.inspect(stacks, label: "stacks")
-        IO.inspect(amount, label: "amount")
-        IO.inspect(from, label: "from")
-        IO.inspect(to, label: "to")
         if amount == 0 do
             stacks
         else
@@ -17,17 +13,14 @@ end
 [stacks, moves] = "day05.txt" |> File.read! |> String.split("\n\n", trim: true) |> Enum.map(&String.split(&1,"\n", trim: true))
 
 stacks =
-stacks |> 
-Enum.map(
-    fn s -> 
-        xs = String.split(s, "", trim: true) 
-        Enum.map([1,5,9,13,17,21,25,29,33], &Enum.at(xs, &1))
-    end) 
-|> Enum.zip_with(&(&1))
-|> Enum.map(fn l -> Enum.drop_while(l, &(&1 == " ")) end)
-|> IO.inspect
-
-
+    stacks |> 
+    Enum.map(
+        fn s -> 
+            xs = String.split(s, "", trim: true) 
+            Enum.map([1,5,9,13,17,21,25,29,33], &Enum.at(xs, &1))
+        end) 
+    |> Enum.zip_with(&(&1))
+    |> Enum.map(fn l -> Enum.drop_while(l, &(&1 == " ")) end)
 
 moves 
 |> Enum.map(
@@ -39,5 +32,3 @@ moves
 |> Enum.map(&List.first/1)
 |> Enum.join("")
 |> IO.puts
-
-

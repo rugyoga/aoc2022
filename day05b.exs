@@ -1,13 +1,9 @@
 defmodule Stack do
     def transfer([amount, from, to], stacks) do
-        IO.inspect(stacks, label: "stacks")
-        IO.inspect(amount, label: "amount")
-        IO.inspect(from, label: "from")
-        IO.inspect(to, label: "to")
-            xs = Enum.at(stacks, from-1) |> Enum.take(amount)
-            from_new = Enum.at(stacks, from-1) |> Enum.drop(amount)
-            to_new = xs ++ Enum.at(stacks, to-1)
-            stacks |> List.replace_at(from-1, from_new) |> List.replace_at(to-1, to_new)
+        xs = Enum.at(stacks, from-1) |> Enum.take(amount)
+        from_new = Enum.at(stacks, from-1) |> Enum.drop(amount)
+        to_new = xs ++ Enum.at(stacks, to-1)
+        stacks |> List.replace_at(from-1, from_new) |> List.replace_at(to-1, to_new)
     end
 end
 
@@ -22,9 +18,6 @@ Enum.map(
     end) 
 |> Enum.zip_with(&(&1))
 |> Enum.map(fn l -> Enum.drop_while(l, &(&1 == " ")) end)
-|> IO.inspect
-
-
 
 moves 
 |> Enum.map(
