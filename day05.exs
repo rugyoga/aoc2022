@@ -1,4 +1,4 @@
-defmodule Day5 do
+defmodule Day05 do
     def transfer([amount, from, to], stacks, f) do
         {xs, from_new } = Enum.at(stacks, from-1) |> Enum.split(amount)
         to_new = f.(xs) ++ Enum.at(stacks, to-1)
@@ -37,8 +37,8 @@ defmodule Day5 do
     def part2, do: solve(&(&1))
 end
 
-Day5.part1 |> IO.inspect(label: "part1")
-Day5.part2 |> IO.inspect(label: "part2")
+Day05.part1 |> IO.inspect(label: "part1")
+Day05.part2 |> IO.inspect(label: "part2")
 
 
 
