@@ -9,9 +9,9 @@ defmodule Day06 do
         |> then(&(&1+n))
     end
 
-    def part1, do: Day06.count(4) |> IO.inspect(label: "part1")
-    def part2, do: Day06.count(14) |> IO.inspect(label: "part2")
+    def part1, do: Day06.count(4)
+    def part2, do: Day06.count(14)
 end
 
-Day06.part1
-Day06.part2
+Day06.part1() |> IO.inspect(label: "part1")
+Day06.part2() |> IO.inspect(label: "part2")

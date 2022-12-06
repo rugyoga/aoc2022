@@ -52,5 +52,3 @@ end
 
 Day02.part1() |> IO.inspect(label: "part1")
 Day02.part2() |> IO.inspect(label: "part2")
-
-
