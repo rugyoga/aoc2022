@@ -1,13 +1,5 @@
 defmodule Day07 do
-    def input, do: "day07.txt" |> File.read! |> String.split("\n", trim: true)
-
-    def count(n, message \\ input()) do
-        message
-        |> Enum.chunk_every(n, 1)
-        |> Enum.take_while(fn items -> (Enum.count(MapSet.new(items))) != n end)
-        |> Enum.count
-        |> then(&(&1+n))
-    end
+    def input, do: "day07.txt" |> File.read! |> String.split("\n", trim: true) |> parse(["/"], %{}) |> size(["/"], %{})
 
     def parse([], _path, tree), do: tree
     def parse([line | lines], path, tree) do
@@ -47,11 +39,9 @@ defmodule Day07 do
             end)
     end
         
-
-
-    def part1, do: parse(input(), [], %{}) |> size(["/"], %{}) |> elem(1) |> Map.values() |> Enum.filter(&(&1 <= 100_000)) |> Enum.sum
+    def part1, do: input() |> elem(1) |> Map.values() |> Enum.filter(&(&1 <= 100_000)) |> Enum.sum
     def part2 do
-        {total, sizes} = parse(input(), [], %{}) |> size(["/"], %{})
+        {total, sizes} = input()
         free_space = 70_000_000 - total
         needed = 30_000_000 - free_space
         sizes |> Map.values |> Enum.sort |> Enum.drop_while(&(&1 < needed)) |> List.first()
