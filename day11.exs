@@ -7,8 +7,6 @@ defmodule Day11 do
               %{ divisor: 5,  throw: [3, 0], op: &(&1+8) },
               %{ divisor: 11, throw: [1, 2], op: &(&1+4) },
               %{ divisor: 17, throw: [3, 5], op: &(&1+5) }]
-
-    @mod 13 * 3 * 7 * 2 * 19 * 5 * 11 * 17
     
     @initial [[89, 73, 66, 57, 64, 80],
               [83, 78, 81, 55, 81, 59, 69],
@@ -52,7 +50,10 @@ defmodule Day11 do
     end 
 
     def part1, do: solve(20, &div(&1, 3))
-    def part2, do: solve(10_000, &rem(&1, @mod))
+    def part2 do
+        modulo = monkeys() |> Enum.map(&(&1.divisor)) |> Enum.product()
+        solve(10_000, &rem(&1, modulo))
+    end
 end
 
 Day11.part1() |> IO.inspect(label: "part1")
