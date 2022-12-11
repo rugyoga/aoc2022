@@ -19,14 +19,14 @@ defmodule Day11 do
               [86, 70, 60, 88, 88, 78, 74, 83],
               [81, 58]]
 
-    def run(i, state) do
+    def run(i, state, less_worry) do
         monkey = Enum.at(monkeys(), i)
         {_, worries} = state |> Enum.at(i)
         worries
         |> Enum.reduce(
             state,
             fn worry, state ->
-                new_worry = rem(monkey.op.(worry), @mod) 
+                new_worry = less_worry.(monkey.op.(worry)) 
                 enqueue(
                     state, 
                     Enum.at(monkey.throw, if(rem(new_worry, monkey.divisor) == 0, do: 0, else: 1)),
@@ -36,12 +36,15 @@ defmodule Day11 do
         |> List.replace_at(i, {Enum.count(worries), []})
     end
 
-    def run_round(state), do: 0..7 |> Enum.reduce(state, &run/2)
+    def less_worry_p1(x), do: div(x, 3)
+    def less_worry_p2(x), do: rem(x, @mod) 
+
+    def run_round(state, less_worry), do: 0..7 |> Enum.reduce(state, &run(&1, &2, less_worry))
 
     def enqueue(state, n, x), do: state |> List.update_at(n, fn {c, ws} -> {c, ws ++ [x]} end)
 
-    def part1, do: @initial |> Enum.map(&{0, &1}) |> Stream.iterate(&run_round/1) |> Stream.drop(1) |> Enum.take(20) |> Enum.zip_reduce([], fn xs, acc -> [xs |> Enum.map(&elem(&1, 0)) |> Enum.sum() | acc] end) |> Enum.sort(:desc) |> Enum.take(2) |> Enum.product()
-    def part2, do: @initial |> Enum.map(&{0, &1}) |> Stream.iterate(&run_round/1) |> Stream.drop(1) |> Enum.take(10_000) |> Enum.zip_reduce([], fn xs, acc -> [xs |> Enum.map(&elem(&1, 0)) |> Enum.sum() | acc] end) |> Enum.sort(:desc) |> Enum.take(2) |> Enum.product()
+    def part1, do: @initial |> Enum.map(&{0, &1}) |> Stream.iterate(fn s -> run_round(s, &less_worry_p1/1) end) |> Stream.drop(1) |> Enum.take(20) |> Enum.zip_reduce([], fn xs, acc -> [xs |> Enum.map(&elem(&1, 0)) |> Enum.sum() | acc] end) |> Enum.sort(:desc) |> Enum.take(2) |> Enum.product()
+    def part2, do: @initial |> Enum.map(&{0, &1}) |> Stream.iterate(fn s -> run_round(s, &less_worry_p2/1) end) |> Stream.drop(1) |> Enum.take(10_000) |> Enum.zip_reduce([], fn xs, acc -> [xs |> Enum.map(&elem(&1, 0)) |> Enum.sum() | acc] end) |> Enum.sort(:desc) |> Enum.take(2) |> Enum.product()
 end
 
 Day11.part1() |> IO.inspect(label: "part1")
