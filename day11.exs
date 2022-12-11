@@ -36,15 +36,23 @@ defmodule Day11 do
         |> List.replace_at(i, {Enum.count(worries), []})
     end
 
-    def less_worry_p1(x), do: div(x, 3)
-    def less_worry_p2(x), do: rem(x, @mod) 
-
     def run_round(state, less_worry), do: 0..7 |> Enum.reduce(state, &run(&1, &2, less_worry))
 
     def enqueue(state, n, x), do: state |> List.update_at(n, fn {c, ws} -> {c, ws ++ [x]} end)
 
-    def part1, do: @initial |> Enum.map(&{0, &1}) |> Stream.iterate(fn s -> run_round(s, &less_worry_p1/1) end) |> Stream.drop(1) |> Enum.take(20) |> Enum.zip_reduce([], fn xs, acc -> [xs |> Enum.map(&elem(&1, 0)) |> Enum.sum() | acc] end) |> Enum.sort(:desc) |> Enum.take(2) |> Enum.product()
-    def part2, do: @initial |> Enum.map(&{0, &1}) |> Stream.iterate(fn s -> run_round(s, &less_worry_p2/1) end) |> Stream.drop(1) |> Enum.take(10_000) |> Enum.zip_reduce([], fn xs, acc -> [xs |> Enum.map(&elem(&1, 0)) |> Enum.sum() | acc] end) |> Enum.sort(:desc) |> Enum.take(2) |> Enum.product()
+    def solve(rounds, less_worry) do
+        @initial
+        |> Enum.map(&{0, &1}) 
+        |> Stream.iterate(fn s -> run_round(s, less_worry) end) 
+        |> Stream.drop(1) |> Enum.take(rounds) 
+        |> Enum.zip_reduce([], fn xs, acc -> [xs |> Enum.map(&elem(&1, 0)) |> Enum.sum() | acc] end)
+        |> Enum.sort(:desc)
+        |> Enum.take(2)
+        |> Enum.product()
+    end 
+
+    def part1, do: solve(20, &div(&1, 3))
+    def part2, do: solve(10_000, &rem(&1, @mod))
 end
 
 Day11.part1() |> IO.inspect(label: "part1")
