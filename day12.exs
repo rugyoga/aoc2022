@@ -57,10 +57,9 @@ defmodule Day12 do
     end
 
     def candidates(t) do
-        result = t.locations
+        t.locations
         |> Enum.filter(fn {_, v} -> v == 0 end)
-        |> Enum.map(fn {p, _} -> %{ t | start: p} end)\
-        result
+        |> Enum.map(fn {p, _} -> %{ t | start: p} end)
     end
 
     def part1, do: input() |> search()
