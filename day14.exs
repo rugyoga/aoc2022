@@ -1,4 +1,6 @@
 defmodule Day14 do
+    @start {500,0}
+
     def input do
         "day14.txt"
         |> File.read!
@@ -12,8 +14,8 @@ defmodule Day14 do
     end
 
     def build_blocks(lines, blocks) do
-        lines
-        |> Enum.reduce(
+        Enum.reduce(
+            lines,
             blocks, 
             fn line, blocks ->
                 line 
@@ -32,27 +34,24 @@ defmodule Day14 do
 
     def drop_all_sand(blocks) do
         {_, y_max} = Enum.max_by(blocks, fn {_, y} -> y end)
-        blocks
-        |> Stream.iterate(&drop_sand(&1, {500, 0}, y_max))
+        Stream.iterate(blocks, &drop_sand(&1, @start, y_max))
     end
 
     def create_floor(blocks) do
         {{x_min, _}, {x_max, _}} = Enum.min_max_by(blocks, fn {x, _} -> x end)
         {_, y_max} = Enum.max_by(blocks, fn {_, y} -> y end)
-        x_min-y_max..x_max+y_max
-        |> Enum.reduce(blocks, &MapSet.put(&2, {&1, y_max+2}))
+        Enum.reduce(x_min-y_max..x_max+y_max, blocks, &MapSet.put(&2, {&1, y_max+2}))
     end
 
     def drop_sand(blocks, {x, y}, y_max) do
-        #IO.inspect({x, y}, label: "drop_sand")
         cond do
-        y > y_max+2 -> blocks
+        y > y_max -> blocks
         MapSet.member?(blocks, {x, y}) ->
-                cond do
-                !MapSet.member?(blocks, {x-1, y}) -> drop_sand(blocks, {x-1, y}, y_max) 
-                !MapSet.member?(blocks, {x+1, y}) -> drop_sand(blocks, {x+1, y}, y_max)
-                true -> MapSet.put(blocks, {x, y-1})
-                end
+            cond do
+            !MapSet.member?(blocks, {x-1, y}) -> drop_sand(blocks, {x-1, y}, y_max) 
+            !MapSet.member?(blocks, {x+1, y}) -> drop_sand(blocks, {x+1, y}, y_max)
+            true -> MapSet.put(blocks, {x, y-1})
+            end
         true -> drop_sand(blocks, {x, y+1}, y_max)
         end
     end
@@ -69,7 +68,7 @@ defmodule Day14 do
         input() 
         |> create_floor()
         |> drop_all_sand()
-        |> Enum.take_while(fn blocks -> !Enum.member?(blocks,{500, 0}) end) 
+        |> Enum.take_while(fn blocks -> !Enum.member?(blocks, @start) end) 
         |> Enum.count()
     end
 end
