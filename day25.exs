@@ -1,22 +1,10 @@
 defmodule Day25 do
 
     def input do
-        snafus =
-            "day25.txt"
-            |> File.read! 
-            |> String.split("\n", trim: true)
-            |> Enum.map(&String.split(&1, "", trim: true))
-        n = snafus |> Enum.max_by(&Enum.count/1) |> Enum.count()
-        IO.inspect(n, label: "n")
-        bases = Stream.iterate(1, &(&1 * 5)) |> Enum.take(n)
-        snafus
-        |> Enum.map(
-            fn digits ->
-                digits 
-                |> Enum.reverse 
-                |> Enum.zip_reduce(bases, 0, fn snafu, base, acc -> acc + snafu_to_digit(snafu) * base end)
-            end
-        )
+        "day25.txt"
+        |> File.read! 
+        |> String.split("\n", trim: true)
+        |> Enum.map(&snafu_to_dec/1)
     end
 
     def snafu_to_digit("="), do: -2
@@ -33,20 +21,16 @@ defmodule Day25 do
 
 
     def snafu_to_dec(s) do
-        snafus = String.split(s, "", trim: true)
-        n = Enum.count(snafus)
-        bases = Stream.iterate(1, &(&1 * 5)) |> Enum.take(n)
-        snafus
+        String.split(s, "", trim: true)
         |> Enum.reverse
-        |> Enum.zip_reduce(bases, 0, fn snafu, base, acc -> acc + snafu_to_digit(snafu) * base end)
+        |> Enum.reduce({1, 0}, fn snafu, {base, acc} -> {base*5, acc + snafu_to_digit(snafu) * base} end)
+        |> elem(1)
     end
 
     def dec_to_snafu(n) when is_binary(n), do: dec_to_snafu(String.to_integer(n))
     def dec_to_snafu(n) do
         n
-        |> Integer.to_string(5)
-        |> String.split("", trim: true)
-        |> Enum.map(&String.to_integer/1)
+        |> Integer.digits(5)
         |> Enum.reverse()
         |> Enum.reduce(
             {[], 0},
