@@ -1,3 +1,5 @@
+Code.require_file("priority_queue.ex")
+
 defmodule Day24 do
 
 def input do
@@ -120,74 +122,6 @@ end
 def manhattan({x, y}, {xt, yt} \\ @finish), do: abs(xt-x) + abs(yt-y)
 
 def part2, do: []
-end
-
-defmodule PriorityQueue do
-    @type heap(a) :: node(a) | nil
-    @type node(a) :: {a, heap(a), heap(a)}
-
-    @spec tree(a, heap(a), heap(a)) :: heap(a) when a: var
-    def tree(x, l \\ nil, r \\ nil), do: {x, l, r}
-
-    @spec new :: heap(term)
-    def new, do: nil
-
-    @spec union(heap(a), heap(a)) :: heap(a) when a: var
-    def union(nil, t2), do: t2
-    def union(t1, nil), do: t1
-    def union({{p1, _} = x1, l1, r1}, {{p2, _}, _, _} = t2) when p1 <= p2, do: tree(x1, union(t2, r1), l1)
-    def union(t1, {x2, l2, r2}), do: tree(x2, union(t1, r2), l2)
-
-    @spec push(heap(a), a) :: heap(a) when a: var
-    def push(heap, x), do: x |> tree |> union(heap)
-
-    @spec pop(heap(a)) :: {a | :empty, heap(a)} when a: var
-    def pop(nil), do: {:empty, nil}
-    def pop({x, l, r}), do: {x, union(l, r)}
-end
-
-defmodule Blizzards do
-    use Agent
-    @w 120
-    @h 25
-
-    def start_link(initial) do
-        Agent.start_link(fn -> %{0 => initial} end, name: __MODULE__)
-    end
-
-    def get(i) do
-        Agent.get_and_update(__MODULE__, &blizzards(i, &1))
-    end
-
-    def blizzard(map, w \\ @w, h \\ @h) do
-        Enum.reduce(
-            map,
-            %{},
-            fn {p, items}, new_map ->
-                Enum.reduce(
-                    items,
-                    new_map,
-                    fn item, new_map ->
-                        Map.update(new_map, move({p, item}, w, h), [item], &([item | &1]))
-                    end)
-            end
-        )
-    end
-
-    def move({{x, y}, ">"}, w, _), do: {rem(x+1, w), y}
-    def move({{x, y}, "<"}, w, _), do: {rem(w+x-1, w), y}
-    def move({{x, y}, "^"}, _, h), do: {x, rem(h+y-1, h)}
-    def move({{x, y}, "v"}, _, h), do: {x, rem(y+1, h)}
-
-    defp blizzards(i, map) do
-        if Map.has_key?(map, i) do
-            {map[i], map}
-        else
-            {prev, map} = blizzards(i-1, map)
-            current = blizzard(prev)
-            {current, Map.put(map, i, current)}
-        end
-    end
 end
 
 defmodule Alternative do
