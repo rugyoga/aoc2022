@@ -54,7 +54,6 @@ defmodule Day15 do
         |> ranges_by_y(y)
         |> Enum.chunk_every(2, 1, :discard)
         |> Enum.map(fn [_..a_max, b_min.._] -> a_max+1..b_min-1 end)
-        #|> then(fn {min, max} -> 1 + max - min - beacons_on_y_axis(input, y_target) end)
     end
 
     def get_x({x, _}), do: x
