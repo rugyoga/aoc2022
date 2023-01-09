@@ -33,24 +33,18 @@ Valve JJ has flow rate=21; tunnel leads to valve II
         |> MapSet.new
     end
 
-    def generate_costs(pq, graph, costs, uncosted) do
+    def generate_costs({pq, costs}, graph, uncosted) do
         {result, pq} = PriorityQueue.pop(pq)
         if result == :empty do
             costs
         else
             {cost, {a, b}} = result
-            extend_b = for from_b <- graph[b].edges, a != from_b and !Map.has_key?(costs, order(a, from_b)), do: order(a, from_b)
-            extend_a = for from_a <- graph[a].edges, from_a != b and !Map.has_key?(costs, order(from_a, b)), do: order(from_a, b)
-            {pq, costs, uncosted} =
-                Enum.reduce(
-                    extend_a ++ extend_b,
-                    {pq, costs, uncosted},
-                    fn edge, {pq, costs, uncosted} -> 
-                        {pq |> PriorityQueue.push({cost+1, edge}),
-                         costs |> Map.put(edge, cost+1),
-                         uncosted |> MapSet.delete(edge)}
-                    end)
-            generate_costs(pq, graph, costs, uncosted)
+            Enum.reduce(
+                (for from_b <- graph[b].edges, a != from_b and !Map.has_key?(costs, order(a, from_b)), do: order(a, from_b)
+                 ++ for from_a <- graph[a].edges, from_a != b and !Map.has_key?(costs, order(from_a, b)), do: order(from_a, b)),
+                {pq, costs},
+                fn edge, {pq, costs} -> {pq |> PriorityQueue.push({cost+1, edge}), costs |> Map.put(edge, cost+1)} end)
+            |> generate_costs(graph, uncosted)
         end
     end
 
@@ -61,7 +55,7 @@ Valve JJ has flow rate=21; tunnel leads to valve II
         uncosted = for x <- closed, y <- closed, x < y and !Map.has_key?(costs, {x,y}), into: MapSet.new, do: {x, y}
         costs
         |> Enum.reduce(PriorityQueue.new, fn {edge, cost}, costs -> PriorityQueue.push(costs, {cost, edge}) end)
-        |> generate_costs(graph, costs, uncosted)
+        |> generate_costs(graph, uncosted)
         |> Enum.flat_map(fn {{a, b}, cost} -> [{{a, b}, cost}, {{b, a}, cost}] end)
         |> Enum.group_by(fn {{a, _}, _} -> a end)
         |> Enum.map(fn {a, a_b_costs} -> {a, a_b_costs |> Enum.map(fn {{_, b}, cost} -> {b, cost} end) |> Map.new()} end)
@@ -71,50 +65,59 @@ Valve JJ has flow rate=21; tunnel leads to valve II
     def search(pq, graph, costs) do
         {result, pq} = PriorityQueue.pop(pq)
         if result != :empty do
-            {{minute, neg_cost} = pq_key, {edge, closed, path}} = result
-            if minute == 0 or Enum.empty?(closed) do
-                {-neg_cost, path}
+            {pq_key, {edge, closed, path}} = result
+            if Enum.empty?(closed) do
+                pq
             else
-                costs[edge]
-                |> Enum.sort_by(fn {_, cost} -> -cost end)
-                |> Enum.filter(fn {edge, _} -> MapSet.member?(closed, edge) end)
-                |> Enum.reduce(pq, &open(&1, &2, pq_key, graph, closed, path))
+                closed
+                |> IO.inspect(label: "edges")
+                |> Enum.reduce(pq, &open(&1, costs[edge][&1], &2, pq_key, graph, closed, path))
                 |> search(graph, costs)
             end
         end
     end
 
-    @open_cost 1 
+    @open_cost 1
 
-    def open({to_edge, move_cost}, pq, {minutes, neg_cost}, graph, closed, path) do
-        new_minutes = minutes - move_cost - @open_cost
-        if minutes >= 0 do
-            PriorityQueue.push(pq, {{neg_cost - new_minutes * graph[to_edge].rate, new_minutes}, {to_edge, MapSet.delete(closed, to_edge), [to_edge | path]}})
+    def open(to_edge, move_cost, pq, {minutes, neg_cost}, graph, closed, path) do
+        new_minutes = minutes - move_cost - @open_cost |> IO.inspect(label: "new_minutes")
+        if new_minutes >= 0 do
+            new_cost = neg_cost - new_minutes * graph[to_edge].rate |> IO.inspect(label: "new_cost")
+            PriorityQueue.push(
+                pq,
+                {{new_cost, new_minutes}, {to_edge, MapSet.delete(closed, to_edge), [to_edge | path]}})
+                |> IO.inspect(label: "Added(#{to_edge},#{move_cost})")
+            |> display(label: "open")
         else
             pq
         end
-        |> IO.inspect(label: "open")
     end
 
-    def first_move(graph, closed, minutes, start \\ "AA") do
+    def first_move(graph, closed, minutes, start) do
         pq = PriorityQueue.new |> PriorityQueue.push({{minutes, 0}, {start, closed, []}})
         if MapSet.member?(closed, start) do
-            pq |> PriorityQueue.push({{(1-minutes) * graph[start].rate, minutes - 1}, {start, MapSet.delete(closed, start), [start]}})
+            open(start, 0, pq, {minutes, 0}, graph, closed, [])
         else
             pq
         end
-        |> IO.inspect(label: "first_move")
+    end
+
+    def display(h, opts \\ []) do
+      IO.inspect(PriorityQueue.to_list(h), opts)
+      h
     end
 
     def part1 do
         graph = input()
-        closed = closed(graph)
-        costs = generate_costs(graph, closed)
-        search(first_move(graph, closed, 30), graph, costs)
+        closed = closed(graph) |> IO.inspect(label: "closed")
+        costs = generate_costs(graph, closed) |> IO.inspect(label: "costs")
+        graph
+        |> first_move(closed, 30, "AA")
+        |> search(graph, costs)
     end
 
     def part2 do
-        input() 
+        input()
     end
 end
 

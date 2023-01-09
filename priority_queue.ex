@@ -20,4 +20,16 @@ defmodule PriorityQueue do
     @spec pop(heap(a)) :: {a | :empty, heap(a)} when a: var
     def pop(nil), do: {:empty, nil}
     def pop({x, l, r}), do: {x, union(l, r)}
+
+    def peek(nil), do: :empty
+    def peek({x, _, _}), do: x
+
+    def empty?(nil), do: true
+    def empty?(_), do: false
+
+    def to_list(nil), do: []
+    def to_list(h) do
+        {item, new_h} = pop(h)
+        [item | to_list(new_h)]
+    end
 end
